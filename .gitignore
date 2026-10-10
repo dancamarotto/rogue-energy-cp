@@ -1,0 +1,4 @@
+Libs/
+.release/
+*.orig
+.DS_Store
