@@ -9,9 +9,9 @@ See `CLAUDE.md` for the constraints (secret values, licensing) and the workflow.
 |---|---|
 | 0. Skeleton | done, confirmed in game |
 | 1. Energy bar | done, confirmed in game |
-| 2. Combo points | done, awaiting in-game confirmation (build test-20261010-212740) |
-| 3. Edit Mode settings panel | next |
-| 4. Polish and first release | pending |
+| 2. Combo points | done, confirmed in game |
+| 3. Edit Mode settings panel | done, awaiting in-game confirmation (build test-20261010-221103) |
+| 4. Polish and first release | next |
 
 ## Stage 0. Skeleton (done)
 
@@ -71,7 +71,7 @@ New `ComboPoints.lua`. A row frame anchored to the top or bottom of `ns.frame`
 In-game test: dots fill 1..5 while building points on a target, in and out of instances;
 reset on target change; row sits above/below the bar and resizes with it.
 
-## Stage 3. Edit Mode settings panel
+## Stage 3. Edit Mode settings panel (done)
 
 In `EditMode.lua`, `LEM:AddFrameSettings(frame, {...})` after `AddFrame`. Order:
 
