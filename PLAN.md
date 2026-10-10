@@ -8,9 +8,9 @@ See `CLAUDE.md` for the constraints (secret values, licensing) and the workflow.
 | Stage | State |
 |---|---|
 | 0. Skeleton | done, confirmed in game |
-| 1. Energy bar | done, awaiting in-game confirmation (build test-20261010-205200) |
-| 2. Combo points | next |
-| 3. Edit Mode settings panel | pending |
+| 1. Energy bar | done, confirmed in game |
+| 2. Combo points | done, awaiting in-game confirmation |
+| 3. Edit Mode settings panel | next |
 | 4. Polish and first release | pending |
 
 ## Stage 0. Skeleton (done)
@@ -51,7 +51,7 @@ In-game test: bar follows energy out of combat, in combat and inside an instance
 values) with no errors; color changes near cap; text aligns; fades after combat; stealth shows it;
 Edit Mode shows it at full alpha.
 
-## Stage 2. Combo points
+## Stage 2. Combo points (done)
 
 New `ComboPoints.lua`. A row frame anchored to the top or bottom of `ns.frame`
 (`cpSide = "ABOVE" | "BELOW"`, `cpOffset` distance), horizontally centered.

@@ -37,10 +37,12 @@ function ns.SetupEditMode()
     LEM:RegisterCallback("enter", function()
         inEditMode = true
         ns.UpdateEnergyBar()
+        ns.UpdateComboPoints() -- sample points while editing
         ns.UpdateVisibility()
     end)
     LEM:RegisterCallback("exit", function()
         inEditMode = nil
+        ns.UpdateComboPoints()
         ns.UpdateVisibility()
     end)
     LEM:RegisterCallback("layout", function()

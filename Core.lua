@@ -19,6 +19,15 @@ ns.defaults = {
     font = "Friz Quadrata TT",
     fontSize = 14,
 
+    -- combo points
+    cpSide = "ABOVE", -- ABOVE | BELOW the bar
+    cpOffset = 2,     -- distance from the bar
+    cpStyle = "classic",
+    cpSize = 14,
+    cpGap = 2,
+    cpColor = { r = 0.92, g = 0.13, b = 0.16 },
+    cpShowEmpty = true, -- false hides the row while there are no points
+
     -- visibility
     outOfCombatAlpha = 0, -- 0 hides the frame out of combat
     showInStealth = true,
@@ -113,6 +122,7 @@ frame:SetScript("OnEvent", function(self, event, arg1)
     elseif event == "PLAYER_LOGIN" then
         if not IsRogue() then return end
         ns.SetupEnergyBar()
+        ns.SetupComboPoints()
         ns.SetupEditMode()
         self:RegisterEvent("PLAYER_REGEN_DISABLED")
         self:RegisterEvent("PLAYER_REGEN_ENABLED")
