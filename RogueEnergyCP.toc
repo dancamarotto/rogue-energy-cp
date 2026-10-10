@@ -13,4 +13,5 @@ Libs\LibSharedMedia-3.0\lib.xml
 Libs\LibEditMode\embed.xml
 
 Core.lua
+EnergyBar.lua
 EditMode.lua
