@@ -13,5 +13,6 @@ externals:
     tag: latest
 
 ignore:
+  - CLAUDE.md
   - PLAN.md
   - README.md
