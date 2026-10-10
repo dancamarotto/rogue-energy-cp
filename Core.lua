@@ -4,8 +4,24 @@ local ADDON, ns = ...
 -- per Edit Mode layout (see EditMode.lua).
 ns.defaults = {
     layouts = {},  -- [layoutName] = { point = "CENTER", x = 0, y = 0 }
+
+    -- bar
     width = 220,
     height = 18,
+    texture = "Blizzard",
+    normalColor = { r = 1.0, g = 0.82, b = 0.10 },
+    cappedColor = { r = 1.0, g = 0.30, b = 0.20 },
+    cappedThreshold = 0.9, -- fraction of max energy from which cappedColor is used
+
+    -- text
+    showText = true,
+    textAlign = "CENTER", -- LEFT | CENTER | RIGHT
+    font = "Friz Quadrata TT",
+    fontSize = 14,
+
+    -- visibility
+    outOfCombatAlpha = 0, -- 0 hides the frame out of combat
+    showInStealth = true,
 }
 
 local frame = CreateFrame("Frame", "RogueEnergyCP", UIParent)
@@ -15,12 +31,6 @@ frame:SetPoint("CENTER")
 frame:SetMovable(true)
 frame:SetClampedToScreen(true)
 frame:Hide()
-
--- Placeholder look until the energy bar exists, so the frame can be
--- placed in Edit Mode.
-local bg = frame:CreateTexture(nil, "BACKGROUND")
-bg:SetAllPoints()
-bg:SetColorTexture(0, 0, 0, 0.6)
 
 local function CopyDefaults(src, dst)
     for key, value in pairs(src) do
@@ -38,6 +48,59 @@ local function IsRogue()
     return class == "ROGUE"
 end
 
+-- Visibility: full alpha in combat, in stealth and in Edit Mode; otherwise
+-- outOfCombatAlpha, reached with a short fade when leaving combat.
+local FADE_DURATION = 1
+local fadeFrom, fadeTo, fadeElapsed
+
+local function StopFade()
+    frame:SetScript("OnUpdate", nil)
+end
+
+local function OnFadeUpdate(self, elapsed)
+    fadeElapsed = fadeElapsed + elapsed
+    local progress = fadeElapsed / FADE_DURATION
+    if progress >= 1 then
+        StopFade()
+        self:SetAlpha(fadeTo)
+        if fadeTo == 0 then self:Hide() end
+    else
+        self:SetAlpha(fadeFrom + (fadeTo - fadeFrom) * progress)
+    end
+end
+
+local function StartFade(target)
+    fadeFrom, fadeTo, fadeElapsed = frame:GetAlpha(), target, 0
+    frame:SetScript("OnUpdate", OnFadeUpdate)
+end
+
+function ns.UpdateVisibility()
+    local db = ns.db
+    if not db then return end
+
+    local shown = ns.IsInEditMode()
+        or UnitAffectingCombat("player")
+        or (db.showInStealth and IsStealthed())
+    if shown then
+        StopFade()
+        frame:SetAlpha(1)
+        frame:Show()
+        return
+    end
+
+    local target = db.outOfCombatAlpha
+    if frame:IsShown() and frame:GetAlpha() > target then
+        StartFade(target)
+    elseif target > 0 then
+        StopFade()
+        frame:SetAlpha(target)
+        frame:Show()
+    else
+        StopFade()
+        frame:Hide()
+    end
+end
+
 frame:RegisterEvent("ADDON_LOADED")
 frame:RegisterEvent("PLAYER_LOGIN")
 frame:SetScript("OnEvent", function(self, event, arg1)
@@ -49,7 +112,15 @@ frame:SetScript("OnEvent", function(self, event, arg1)
         self:UnregisterEvent("ADDON_LOADED")
     elseif event == "PLAYER_LOGIN" then
         if not IsRogue() then return end
+        ns.SetupEnergyBar()
         ns.SetupEditMode()
+        self:RegisterEvent("PLAYER_REGEN_DISABLED")
+        self:RegisterEvent("PLAYER_REGEN_ENABLED")
+        self:RegisterEvent("UPDATE_STEALTH")
+        self:RegisterEvent("PLAYER_ENTERING_WORLD")
+        ns.UpdateVisibility()
+    else
+        ns.UpdateVisibility()
     end
 end)
 

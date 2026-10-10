@@ -36,11 +36,12 @@ function ns.SetupEditMode()
     -- callbacks first: AddFrame may fire "layout" right away
     LEM:RegisterCallback("enter", function()
         inEditMode = true
-        frame:Show()
+        ns.UpdateEnergyBar()
+        ns.UpdateVisibility()
     end)
     LEM:RegisterCallback("exit", function()
         inEditMode = nil
-        frame:Hide() -- visibility rules arrive with the energy bar
+        ns.UpdateVisibility()
     end)
     LEM:RegisterCallback("layout", function()
         ns.ApplyPosition()

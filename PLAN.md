@@ -7,9 +7,9 @@ See `CLAUDE.md` for the constraints (secret values, licensing) and the workflow.
 
 | Stage | State |
 |---|---|
-| 0. Skeleton | done, awaiting in-game confirmation (build test-20261010-193709) |
-| 1. Energy bar | next |
-| 2. Combo points | pending |
+| 0. Skeleton | done, confirmed in game |
+| 1. Energy bar | done, awaiting in-game confirmation |
+| 2. Combo points | next |
 | 3. Edit Mode settings panel | pending |
 | 4. Polish and first release | pending |
 
@@ -24,7 +24,7 @@ In-game test: loads without errors on a rogue; `/recp` shows the frame in Edit M
 reload, position kept; each layout keeps its own position; `/recp reset` centers; nothing on
 a non-rogue.
 
-## Stage 1. Energy bar
+## Stage 1. Energy bar (done)
 
 New `EnergyBar.lua`. Replace the placeholder with:
 
