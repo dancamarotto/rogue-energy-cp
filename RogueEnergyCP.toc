@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Title: Rogue Energy CP
-## Notes: Energy bar with combo points for rogues on WoW Forever. Configure it in Edit Mode.
+## Notes: Energy bar with combo points for rogues on WoW Forever. Colors and visibility in Options > AddOns (/recp), size and position in Edit Mode.
 ## Author: Danilo Camarotto
 ## Version: @project-version@
 ## IconTexture: Interface\Icons\Ability_Rogue_SliceDice
@@ -16,3 +16,5 @@ Core.lua
 EnergyBar.lua
 ComboPoints.lua
 EditMode.lua
+Options.lua
+Options.xml

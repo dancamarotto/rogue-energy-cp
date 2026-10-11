@@ -1,7 +1,8 @@
 local ADDON, ns = ...
 
 -- Saved settings. Everything is account wide; only the position is stored
--- per Edit Mode layout (see EditMode.lua).
+-- per Edit Mode layout (see EditMode.lua). Appearance and visibility are
+-- set in Options > AddOns (Options.lua), the rest in Edit Mode.
 ns.defaults = {
     layouts = {},  -- [layoutName] = { point = "CENTER", x = 0, y = 0 }
 
@@ -188,6 +189,7 @@ frame:SetScript("OnEvent", function(self, event, arg1)
         ns.SetupEnergyBar()
         ns.SetupComboPoints()
         ns.SetupEditMode()
+        ns.SetupOptions()
         self:RegisterEvent("PLAYER_REGEN_DISABLED")
         self:RegisterEvent("PLAYER_REGEN_ENABLED")
         self:RegisterEvent("UPDATE_STEALTH")
@@ -204,9 +206,7 @@ SlashCmdList.ROGUEENERGYCP = function(msg)
     if msg == "reset" then
         ns.SavePosition("CENTER", 0, 0)
         ns.ApplyPosition()
-    elseif InCombatLockdown() then
-        print("|cff00ff00Rogue Energy CP:|r Edit Mode cannot be opened in combat.")
     else
-        ShowUIPanel(EditModeManagerFrame)
+        ns.OpenOptions()
     end
 end

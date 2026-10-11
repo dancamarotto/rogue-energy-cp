@@ -1,7 +1,9 @@
 # Rogue Energy CP
 
 WoW addon: energy bar with combo points for rogues, **WoW Forever only** (Interface 16001),
-configured **only through the game's Edit Mode** (LibEditMode). Plain SavedVariables
+configured through the game's own UI like the native components: appearance and visibility in
+**Options > AddOns** (Settings API), size, layout and position in **Edit Mode** (LibEditMode).
+No custom config window. Plain SavedVariables
 (`RogueEnergyCPDB`), no Ace libs. The plan, stage status and technical design live in `PLAN.md`;
 read it first and keep it updated when a stage completes.
 
@@ -37,7 +39,12 @@ read it first and keep it updated when a stage completes.
 
 - 4 spaces, double quotes, `local ADDON, ns = ...` per file, modules talk through `ns`.
 - Files: `Core.lua` (db, events, visibility), `EnergyBar.lua`, `ComboPoints.lua`,
-  `EditMode.lua` (position per layout + settings dialog). Add new files to `RogueEnergyCP.toc`.
+  `EditMode.lua` (position per layout + size/layout dialog), `Options.lua` + `Options.xml`
+  (Options > AddOns page: texture, colors, font, visibility; the XML holds the color swatch
+  template). Add new files to `RogueEnergyCP.toc`.
 - Settings are account wide in `ns.db`; only the position is per Edit Mode layout
   (`ns.db.layouts[layoutName]`). Defaults in `ns.defaults`, merged by `CopyDefaults` on load.
-- Keep the settings few: the Edit Mode dialog is the whole UI.
+- Keep the settings few. Where a setting goes: geometry and arrangement (sizes, offsets, text
+  align, combo points side/style/show empty) in Edit Mode; appearance and behavior (texture,
+  colors, font, capped threshold, out of combat alpha, stealth) in Options > AddOns.
+  `/recp` opens the Options page, `/recp reset` centers the bar.

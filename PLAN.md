@@ -1,6 +1,7 @@
 # Plan
 
-Energy bar + combo points for rogues, Forever only, configured only through Edit Mode.
+Energy bar + combo points for rogues, Forever only, configured through Options > AddOns
+(appearance, visibility) and Edit Mode (size, layout, position).
 See `CLAUDE.md` for the constraints (secret values, licensing) and the workflow.
 
 ## Status
@@ -11,7 +12,8 @@ See `CLAUDE.md` for the constraints (secret values, licensing) and the workflow.
 | 1. Energy bar | done, confirmed in game |
 | 2. Combo points | done, confirmed in game |
 | 3. Edit Mode settings panel | done, confirmed in game |
-| 3b. Fade only once energy is full, no Edit Mode label, combo points fade | done, awaiting in-game confirmation |
+| 3b. Fade only once energy is full, no Edit Mode label, combo points fade | done, confirmed in game |
+| 3c. Options > AddOns page | done, awaiting in-game confirmation |
 | 4. Polish and first release | next |
 
 ## Stage 0. Skeleton (done)
@@ -85,21 +87,47 @@ reset on target change; row sits above/below the bar and resizes with it.
 
 ## Stage 3. Edit Mode settings panel (done)
 
-In `EditMode.lua`, `LEM:AddFrameSettings(frame, {...})` after `AddFrame`. Order:
+In `EditMode.lua`, `LEM:AddFrameSettings(frame, {...})` after `AddFrame`. Since stage 3c it
+holds only geometry and arrangement:
 
-1. Bar: Width (slider 80-600), Height (8-60), Texture (dropdown from LSM list),
-   Normal color (ColorPicker), Capped color (ColorPicker), Capped at (slider 50-100 %).
-2. Text (divider): Show text (checkbox), Align (dropdown LEFT/CENTER/RIGHT), Font (dropdown LSM),
-   Size (slider 8-32).
+1. Bar: Width (slider 80-600), Height (8-60).
+2. Text (divider): Show text (checkbox), Align (dropdown LEFT/CENTER/RIGHT), Size (slider 8-32).
 3. Combo points (divider): Side (dropdown ABOVE/BELOW), Style (dropdown classic/silver/square/glow/flat/diamond),
-   Color (ColorPicker), Size (slider 8-30), Gap (0-10), Distance (0-20), Show empty (checkbox).
-4. Visibility (divider): Out of combat alpha (slider 0-100 %), Show in stealth (checkbox).
+   Size (slider 8-30), Gap (0-10), Distance (0-20), Show empty (checkbox).
 
 `get` returns `ns.db[key]`; `set` writes it and calls the module's `Apply()`. Settings are
-global (not per layout). ColorPicker get/set use ColorMixin (`CreateColor`), store r/g/b.
+global (not per layout).
 
 In-game test: every control applies live, Reset to Defaults restores `ns.defaults`,
 values persist after reload.
+
+## Stage 3c. Options > AddOns page (done)
+
+The appearance and visibility settings moved out of Edit Mode into a native Settings page
+(`Options.lua`, `Settings.RegisterVerticalLayoutCategory` + `RegisterAddOnCategory`), so the
+addon follows the native components: colors and behavior in Options, layout in Edit Mode.
+`/recp` opens the page (`Settings.OpenToCategory`); Edit Mode is opened the normal way.
+
+Sections and controls, every one a `Settings.RegisterProxySetting` over `ns.db[key]` whose
+setter calls the module's `Apply()`:
+
+1. Energy bar: Texture (dropdown, LSM statusbar list), Normal color, Capped color (swatch),
+   Capped at (slider 50-100 %), Font (dropdown, LSM font list).
+2. Combo points: Color (swatch).
+3. Visibility: Out of combat alpha (slider 0-100 %), Show in stealth (checkbox).
+
+Percent sliders store 0-1 and expose 0-100. Colors are String settings holding `rrggbb`; the
+swatch is a custom list element (`Options.xml`, `RogueEnergyCPColorControlTemplate` inheriting
+`SettingsControlTemplate`) that opens `ColorPickerFrame:SetupColorPickerAndShow` and follows
+the setting value, so the panel's Defaults button resets it too. No preview: the bar is not
+forced visible while the page is open (decided), so out of combat with full energy and alpha 0
+the changes are only seen later.
+
+In-game test: `/recp` opens Options > AddOns > Rogue Energy CP; every control applies live
+(check with energy below the cap so the bar is visible); the long Texture/Font dropdowns fit
+the screen; the color swatch opens the picker, Okay keeps and Cancel reverts; the panel's
+Defaults button resets the page; Edit Mode shows only the layout settings and its Reset to
+Defaults only touches those; values persist after reload.
 
 ## Stage 4. Polish and first release
 

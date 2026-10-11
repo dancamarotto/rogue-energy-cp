@@ -2,8 +2,13 @@
 
 Energy bar with combo points for rogues on **World of Warcraft: Forever**.
 
-Everything is configured in the game's Edit Mode: open it, select the bar,
-drag it where you want it and use the settings panel. `/recp` opens Edit Mode,
+Configured like the native frames:
+
+- **Options > AddOns > Rogue Energy CP** (or `/recp`): bar texture, colors, capped threshold,
+  font, combo points color, out of combat alpha, show in stealth.
+- **Edit Mode**: drag the bar where you want it (position is saved per layout) and use its
+  settings for width, height, text, and the combo points side, style, size, gap and spacing.
+
 `/recp reset` moves the bar back to the center of the screen.
 
 ## Credits

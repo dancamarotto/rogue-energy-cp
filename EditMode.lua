@@ -1,7 +1,6 @@
 local _, ns = ...
 
 local LEM = LibStub("LibEditMode")
-local LSM = LibStub("LibSharedMedia-3.0")
 local frame = ns.frame
 local inEditMode
 
@@ -31,9 +30,9 @@ function ns.IsInEditMode()
     return inEditMode
 end
 
--- Settings dialog. Every setting is account wide (ns.db[key]); get/set
--- ignore the layout name. The percent sliders convert between the 0-1
--- value stored and the 0-100 shown.
+-- Settings dialog: size, text layout and the combo points arrangement.
+-- Appearance and visibility live in Options > AddOns (Options.lua). Every
+-- setting is account wide (ns.db[key]); get/set ignore the layout name.
 local T = LEM.SettingType
 
 local function Slider(name, key, minValue, maxValue, apply, desc)
@@ -45,16 +44,6 @@ local function Slider(name, key, minValue, maxValue, apply, desc)
     }
 end
 
-local function PercentSlider(name, key, minValue, maxValue, apply, desc)
-    return {
-        kind = T.Slider, name = name, desc = desc,
-        default = ns.defaults[key] * 100, minValue = minValue, maxValue = maxValue, valueStep = 1,
-        formatter = function(value) return value .. "%" end,
-        get = function() return math.floor(ns.db[key] * 100 + 0.5) end,
-        set = function(_, value) ns.db[key] = value / 100; apply() end,
-    }
-end
-
 local function Checkbox(name, key, apply, desc)
     return {
         kind = T.Checkbox, name = name, desc = desc, default = ns.defaults[key],
@@ -63,27 +52,11 @@ local function Checkbox(name, key, apply, desc)
     }
 end
 
-local function Dropdown(name, key, values, apply, height)
+local function Dropdown(name, key, values, apply)
     return {
-        kind = T.Dropdown, name = name, default = ns.defaults[key], values = values, height = height,
+        kind = T.Dropdown, name = name, default = ns.defaults[key], values = values,
         get = function() return ns.db[key] end,
         set = function(_, value) ns.db[key] = value; apply() end,
-    }
-end
-
-local function ColorPicker(name, key, apply)
-    local d = ns.defaults[key]
-    return {
-        kind = T.ColorPicker, name = name, default = CreateColor(d.r, d.g, d.b, 1),
-        get = function()
-            local c = ns.db[key]
-            return CreateColor(c.r, c.g, c.b, 1)
-        end,
-        set = function(_, color)
-            local c = ns.db[key]
-            c.r, c.g, c.b = color:GetRGB()
-            apply()
-        end,
     }
 end
 
@@ -91,18 +64,8 @@ local function Divider(name)
     return { kind = T.Divider, name = name }
 end
 
-local function MediaValues(mediaType)
-    return function()
-        local values = {}
-        for _, name in ipairs(LSM:List(mediaType)) do
-            values[#values + 1] = { text = name, value = name }
-        end
-        return values
-    end
-end
-
 local function BuildSettings()
-    local bar, cp, vis = ns.ApplyEnergyBar, ns.ApplyComboPoints, ns.ApplyVisibility
+    local bar, cp = ns.ApplyEnergyBar, ns.ApplyComboPoints
 
     local styles = {}
     for _, style in ipairs(ns.CP_STYLES) do
@@ -112,11 +75,6 @@ local function BuildSettings()
     return {
         Slider("Width", "width", 80, 600, bar),
         Slider("Height", "height", 8, 60, bar),
-        Dropdown("Texture", "texture", MediaValues("statusbar"), bar, 400),
-        ColorPicker("Normal color", "normalColor", bar),
-        ColorPicker("Capped color", "cappedColor", bar),
-        PercentSlider("Capped at", "cappedThreshold", 50, 100, bar,
-            "Energy from which the bar uses the capped color."),
 
         Divider("Text"),
         Checkbox("Show text", "showText", bar),
@@ -125,7 +83,6 @@ local function BuildSettings()
             { text = "Center", value = "CENTER" },
             { text = "Right", value = "RIGHT" },
         }, bar),
-        Dropdown("Font", "font", MediaValues("font"), bar, 400),
         Slider("Size", "fontSize", 8, 32, bar),
 
         Divider("Combo points"),
@@ -134,18 +91,11 @@ local function BuildSettings()
             { text = "Below the bar", value = "BELOW" },
         }, cp),
         Dropdown("Style", "cpStyle", styles, cp),
-        ColorPicker("Color", "cpColor", cp),
         Slider("Size", "cpSize", 8, 30, cp),
         Slider("Gap", "cpGap", 0, 10, cp),
         Slider("Distance", "cpOffset", 0, 20, cp, "Space between the bar and the combo points."),
         Checkbox("Show empty", "cpShowEmpty", cp,
             "Keep the empty sockets visible when there are no combo points."),
-
-        Divider("Visibility"),
-        PercentSlider("Out of combat alpha", "outOfCombatAlpha", 0, 100, vis,
-            "Alpha of the bar out of combat once energy is full (0 hides it). "
-            .. "It stays fully visible while energy is below the cap, in combat and in Edit Mode."),
-        Checkbox("Show in stealth", "showInStealth", vis),
     }
 end
 
