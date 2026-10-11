@@ -13,7 +13,7 @@ See `CLAUDE.md` for the constraints (secret values, licensing) and the workflow.
 | 2. Combo points | done, confirmed in game |
 | 3. Edit Mode settings panel | done, confirmed in game |
 | 3b. Fade only once energy is full, no Edit Mode label, combo points fade | done, confirmed in game |
-| 3c. Options > AddOns page | done, awaiting in-game confirmation |
+| 3c. Options > AddOns page | done, confirmed in game |
 | 4. Polish and first release | next |
 
 ## Stage 0. Skeleton (done)

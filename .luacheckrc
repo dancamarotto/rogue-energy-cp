@@ -23,7 +23,6 @@ globals = {
     "CreateSettingsListSectionHeaderInitializer",
     "Enum",
     "GetComboPoints",
-    "GetTime",
     "IsStealthed",
     "LibStub",
     "MinimalSliderWithSteppersMixin",
@@ -34,5 +33,4 @@ globals = {
     "UnitPower",
     "UnitPowerMax",
     "UnitPowerPercent",
-    "wipe",
 }
