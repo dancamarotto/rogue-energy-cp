@@ -11,7 +11,7 @@ See `CLAUDE.md` for the constraints (secret values, licensing) and the workflow.
 | 1. Energy bar | done, confirmed in game |
 | 2. Combo points | done, confirmed in game |
 | 3. Edit Mode settings panel | done, confirmed in game |
-| 3b. Fade only once energy is full | done, awaiting in-game confirmation |
+| 3b. Fade only once energy is full, no Edit Mode label, combo points fade | done, awaiting in-game confirmation |
 | 4. Polish and first release | next |
 
 ## Stage 0. Skeleton (done)
@@ -74,7 +74,9 @@ New `ComboPoints.lua`. A row frame anchored to the top or bottom of `ns.frame`
   `UNIT_POWER_UPDATE` (powerType "COMBO_POINTS"), `PLAYER_TARGET_CHANGED`, `PLAYER_ENTERING_WORLD`,
   plus a light OnUpdate throttle (0.1s) as safety net, like CPoP.
 - Shown whenever the energy bar is shown; `cpShowEmpty = true` keeps empty sockets visible,
-  false hides the row when `HasPoints()` is false (nil = secret → keep shown).
+  false fades the row out (`ns.FADE_OUT`, 1s, same `ns.NewFader` as the energy bar in `Core.lua`)
+  when `HasPoints()` turns false and fades it in (`ns.FADE_IN`, 0.2s) when it turns true
+  (nil = secret → keep shown).
 - Defaults: `cpSide = "ABOVE"`, `cpOffset = 2`, `cpStyle = "classic"`, `cpSize = 14`,
   `cpGap = 2`, `cpColor = {r=0.92, g=0.13, b=0.16}`, `cpShowEmpty = true`.
 

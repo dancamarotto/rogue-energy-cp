@@ -26,6 +26,17 @@ local row = CreateFrame("Frame", nil, frame)
 local dots = {}
 local dotCount = 0
 
+-- With cpShowEmpty off the row fades out when the points drop to zero and
+-- fades back in quickly with the first point.
+local rowVisible = true
+local rowFader = ns.NewFader(row)
+
+local function SetRowVisible(visible)
+    if visible == rowVisible then return end
+    rowVisible = visible
+    rowFader:Start(visible and 1 or 0, visible and ns.FADE_IN or ns.FADE_OUT)
+end
+
 local function GetDot(i)
     local dot = dots[i]
     if dot then return dot end
@@ -70,11 +81,7 @@ function ns.UpdateComboPoints()
     for i = 1, dotCount do
         dots[i].bar:SetValue(points)
     end
-    if editing or ns.db.cpShowEmpty then
-        row:Show()
-    else
-        row:SetShown(HasPoints() ~= false)
-    end
+    SetRowVisible(editing or ns.db.cpShowEmpty or HasPoints() ~= false)
 end
 
 -- Re-reads every setting from ns.db. Called on login, when the max number

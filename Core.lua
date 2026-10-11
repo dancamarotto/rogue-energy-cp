@@ -57,6 +57,50 @@ local function IsRogue()
     return class == "ROGUE"
 end
 
+-- Fader: moves a frame's alpha over time with an OnUpdate and hides the
+-- frame at alpha 0. Appearing is quick, disappearing slower. The alpha is
+-- tracked in Lua and never read back from the frame, which may hold a
+-- secret-derived value (see the secret path below).
+ns.FADE_IN = 0.2
+ns.FADE_OUT = 1
+
+function ns.NewFader(target, onDone)
+    local fader = { alpha = 1 }
+    local fadeFrom, fadeTo, fadeDuration, fadeElapsed
+
+    local function OnUpdate(_, elapsed)
+        fadeElapsed = fadeElapsed + elapsed
+        local progress = fadeElapsed / fadeDuration
+        if progress >= 1 then
+            fader:Set(fadeTo)
+            if onDone then onDone() end
+        else
+            fader.alpha = fadeFrom + (fadeTo - fadeFrom) * progress
+            target:SetAlpha(fader.alpha)
+        end
+    end
+
+    function fader:Stop()
+        target:SetScript("OnUpdate", nil)
+    end
+
+    -- Jumps to alpha at once; 0 hides the frame.
+    function fader:Set(alpha)
+        self:Stop()
+        self.alpha = alpha
+        target:SetAlpha(alpha)
+        target:SetShown(alpha > 0)
+    end
+
+    function fader:Start(toAlpha, duration)
+        fadeFrom, fadeTo, fadeDuration, fadeElapsed = self.alpha, toAlpha, duration, 0
+        target:Show()
+        target:SetScript("OnUpdate", OnUpdate)
+    end
+
+    return fader
+end
+
 -- Visibility: full alpha in combat, in stealth and in Edit Mode. Out of
 -- combat the frame stays visible while energy is below the cap and fades to
 -- outOfCombatAlpha once energy is full (not configurable). Out of combat the
@@ -64,9 +108,8 @@ end
 -- game picks the alpha itself through a step curve evaluated by
 -- UnitPowerPercent, exactly like the bar color.
 local POWER = Enum.PowerType.Energy
-local FADE_DURATION = 1
 local state -- "shown" | "fading" | "faded" | "secret"
-local fadeTo, fadeElapsed
+local fader = ns.NewFader(frame, function() state = "faded" end)
 
 local alphaCurve = C_CurveUtil.CreateCurve()
 alphaCurve:SetType(Enum.LuaCurveType.Step)
@@ -82,37 +125,14 @@ local function IsEnergyFull()
     return UnitPower("player", POWER) >= UnitPowerMax("player", POWER)
 end
 
-local function StopFade()
-    frame:SetScript("OnUpdate", nil)
-end
-
 local function SetShown()
-    StopFade()
     state = "shown"
-    frame:SetAlpha(1)
-    frame:Show()
+    fader:Set(1)
 end
 
 local function SetFaded(alpha)
-    StopFade()
     state = "faded"
-    frame:SetAlpha(alpha)
-    frame:SetShown(alpha > 0)
-end
-
-local function OnFadeUpdate(self, elapsed)
-    fadeElapsed = fadeElapsed + elapsed
-    local progress = fadeElapsed / FADE_DURATION
-    if progress >= 1 then
-        SetFaded(fadeTo)
-    else
-        self:SetAlpha(1 + (fadeTo - 1) * progress)
-    end
-end
-
-local function StartFade(target)
-    state, fadeTo, fadeElapsed = "fading", target, 0
-    frame:SetScript("OnUpdate", OnFadeUpdate)
+    fader:Set(alpha)
 end
 
 -- Called on every visibility event and on every energy update out of combat.
@@ -131,7 +151,7 @@ function ns.UpdateVisibility()
     local ok, full = pcall(IsEnergyFull)
     if not ok then
         -- secret energy: alpha 1 below the cap, outOfCombatAlpha at the cap
-        StopFade()
+        fader:Stop()
         state = "secret"
         frame:Show()
         if not pcall(frame.SetAlpha, frame, UnitPowerPercent("player", POWER, false, alphaCurve)) then
@@ -140,7 +160,8 @@ function ns.UpdateVisibility()
     elseif not full then
         SetShown()
     elseif state == "shown" then
-        StartFade(db.outOfCombatAlpha)
+        state = "fading"
+        fader:Start(db.outOfCombatAlpha, ns.FADE_OUT)
     elseif state ~= "fading" then
         SetFaded(db.outOfCombatAlpha) -- already faded, coming from secret, or login
     end
