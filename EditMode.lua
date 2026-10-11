@@ -186,8 +186,10 @@ function ns.SetupEditMode()
         ns.db.layouts[layoutName] = nil
     end)
 
+    -- Empty system name: the Edit Mode label would sit over the bar and hide
+    -- the energy text, which is what the font settings are meant to preview.
     LEM:AddFrame(frame, function(_, _, point, x, y)
         ns.SavePosition(point, x, y)
-    end, { point = "CENTER", x = 0, y = 0 }, "Rogue Energy CP")
+    end, { point = "CENTER", x = 0, y = 0 }, "")
     LEM:AddFrameSettings(frame, BuildSettings())
 end
