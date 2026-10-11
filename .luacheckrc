@@ -13,16 +13,13 @@ globals = {
     -- our own
     "RogueEnergyCP",
     "RogueEnergyCPDB",
-    "RogueEnergyCPColorControlMixin",
     "SlashCmdList",
 
     -- wow api
     "C_CurveUtil",
-    "ColorPickerFrame",
     "CopyTable",
     "CreateFrame",
     "CreateColor",
-    "CreateFromMixins",
     "CreateSettingsListSectionHeaderInitializer",
     "Enum",
     "GetComboPoints",
@@ -31,7 +28,6 @@ globals = {
     "LibStub",
     "MinimalSliderWithSteppersMixin",
     "Settings",
-    "SettingsControlMixin",
     "UIParent",
     "UnitAffectingCombat",
     "UnitClass",

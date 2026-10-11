@@ -39,9 +39,11 @@ read it first and keep it updated when a stage completes.
 
 - 4 spaces, double quotes, `local ADDON, ns = ...` per file, modules talk through `ns`.
 - Files: `Core.lua` (db, events, visibility), `EnergyBar.lua`, `ComboPoints.lua`,
-  `EditMode.lua` (position per layout + size/layout dialog), `Options.lua` + `Options.xml`
-  (Options > AddOns page: texture, colors, font, visibility; the XML holds the color swatch
-  template). Add new files to `RogueEnergyCP.toc`.
+  `EditMode.lua` (position per layout + size/layout dialog), `Options.lua` (Options > AddOns
+  page: texture, colors, font, visibility). Add new files to `RogueEnergyCP.toc`.
+- The Blizzard UI source for this client is the `forever` branch of
+  https://github.com/Gethe/wow-ui-source; check template names and API signatures there
+  before using them (templates from other branches may not exist).
 - Settings are account wide in `ns.db`; only the position is per Edit Mode layout
   (`ns.db.layouts[layoutName]`). Defaults in `ns.defaults`, merged by `CopyDefaults` on load.
 - Keep the settings few. Where a setting goes: geometry and arrangement (sizes, offsets, text

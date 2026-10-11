@@ -116,10 +116,10 @@ setter calls the module's `Apply()`:
 2. Combo points: Color (swatch).
 3. Visibility: Out of combat alpha (slider 0-100 %), Show in stealth (checkbox).
 
-Percent sliders store 0-1 and expose 0-100. Colors are String settings holding `rrggbb`; the
-swatch is a custom list element (`Options.xml`, `RogueEnergyCPColorControlTemplate` inheriting
-`SettingsControlTemplate`) that opens `ColorPickerFrame:SetupColorPickerAndShow` and follows
-the setting value, so the panel's Defaults button resets it too. No preview: the bar is not
+Percent sliders store 0-1 and expose 0-100. Colors are String settings holding `aarrggbb`
+(the format of `ColorMixin:GenerateHexColor`) shown with the client's own
+`Settings.CreateColorSwatch`, which opens the game's color picker and follows the setting, so
+the panel's Defaults button resets it too. No preview: the bar is not
 forced visible while the page is open (decided), so out of combat with full energy and alpha 0
 the changes are only seen later.
 

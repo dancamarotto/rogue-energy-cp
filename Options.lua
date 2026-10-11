@@ -10,16 +10,17 @@ local LSM = LibStub("LibSharedMedia-3.0")
 local PREFIX = "ROGUE_ENERGY_CP_"
 local category, layout
 
--- Colors travel through the Settings API as "rrggbb" strings.
+-- Colors travel through the Settings API as "aarrggbb" strings, the
+-- format of the game's own color swatch control (ColorMixin:GenerateHexColor).
 local function ToHex(r, g, b)
-    return string.format("%02x%02x%02x",
+    return string.format("ff%02x%02x%02x",
         math.floor(r * 255 + 0.5), math.floor(g * 255 + 0.5), math.floor(b * 255 + 0.5))
 end
 
 local function FromHex(hex)
-    return tonumber(hex:sub(1, 2), 16) / 255,
-        tonumber(hex:sub(3, 4), 16) / 255,
-        tonumber(hex:sub(5, 6), 16) / 255
+    return tonumber(hex:sub(-6, -5), 16) / 255,
+        tonumber(hex:sub(-4, -3), 16) / 255,
+        tonumber(hex:sub(-2, -1), 16) / 255
 end
 
 local function Proxy(key, varType, name, default, get, set)
@@ -75,52 +76,7 @@ local function ColorPicker(name, key, apply, tooltip)
             c.r, c.g, c.b = FromHex(value)
             apply()
         end)
-    layout:AddInitializer(Settings.CreateControlInitializer("RogueEnergyCPColorControlTemplate", setting, nil, tooltip))
-end
-
--- Color control for the settings list (Options.xml): the native list has
--- no color picker, so this is a swatch in the control column that opens
--- the game's ColorPickerFrame. Follows the setting like the native controls
--- do, so the Defaults button updates it too.
-RogueEnergyCPColorControlMixin = CreateFromMixins(SettingsControlMixin)
-
-function RogueEnergyCPColorControlMixin:Init(initializer)
-    SettingsControlMixin.Init(self, initializer)
-    self.setting = initializer:GetSetting()
-    self:SetSwatch(self.setting:GetValue())
-    self.valueHandle = Settings.SetOnValueChangedCallback(self.setting:GetVariable(), function(_, _, value)
-        self:SetSwatch(value)
-    end)
-end
-
-function RogueEnergyCPColorControlMixin:Release()
-    if self.valueHandle then
-        self.valueHandle:Unregister()
-        self.valueHandle = nil
-    end
-    SettingsControlMixin.Release(self)
-end
-
-function RogueEnergyCPColorControlMixin:OnSettingValueChanged(_, value)
-    self:SetSwatch(value)
-end
-
-function RogueEnergyCPColorControlMixin:SetSwatch(hex)
-    self.Swatch.Color:SetColorTexture(FromHex(hex))
-end
-
-function RogueEnergyCPColorControlMixin:OpenPicker()
-    local setting = self.setting
-    local r, g, b = FromHex(setting:GetValue())
-    ColorPickerFrame:SetupColorPickerAndShow({
-        r = r, g = g, b = b, hasOpacity = false,
-        swatchFunc = function()
-            setting:SetValue(ToHex(ColorPickerFrame:GetColorRGB()))
-        end,
-        cancelFunc = function(previous)
-            setting:SetValue(ToHex(previous.r, previous.g, previous.b))
-        end,
-    })
+    Settings.CreateColorSwatch(category, setting, tooltip)
 end
 
 function ns.SetupOptions()

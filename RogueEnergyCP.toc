@@ -17,4 +17,3 @@ EnergyBar.lua
 ComboPoints.lua
 EditMode.lua
 Options.lua
-Options.xml
