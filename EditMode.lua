@@ -102,7 +102,7 @@ local function MediaValues(mediaType)
 end
 
 local function BuildSettings()
-    local bar, cp, vis = ns.ApplyEnergyBar, ns.ApplyComboPoints, ns.UpdateVisibility
+    local bar, cp, vis = ns.ApplyEnergyBar, ns.ApplyComboPoints, ns.ApplyVisibility
 
     local styles = {}
     for _, style in ipairs(ns.CP_STYLES) do
@@ -143,7 +143,8 @@ local function BuildSettings()
 
         Divider("Visibility"),
         PercentSlider("Out of combat alpha", "outOfCombatAlpha", 0, 100, vis,
-            "0 hides the bar out of combat. It always shows in combat and in Edit Mode."),
+            "Alpha of the bar out of combat once energy is full (0 hides it). "
+            .. "It stays fully visible while energy is below the cap, in combat and in Edit Mode."),
         Checkbox("Show in stealth", "showInStealth", vis),
     }
 end

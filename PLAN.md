@@ -10,7 +10,8 @@ See `CLAUDE.md` for the constraints (secret values, licensing) and the workflow.
 | 0. Skeleton | done, confirmed in game |
 | 1. Energy bar | done, confirmed in game |
 | 2. Combo points | done, confirmed in game |
-| 3. Edit Mode settings panel | done, awaiting in-game confirmation (build test-20261010-221103) |
+| 3. Edit Mode settings panel | done, confirmed in game |
+| 3b. Fade only once energy is full | done, awaiting in-game confirmation |
 | 4. Polish and first release | next |
 
 ## Stage 0. Skeleton (done)
@@ -40,15 +41,24 @@ New `EnergyBar.lua`. Replace the placeholder with:
 - Text: one FontString, font from LibSharedMedia (`font`), size and outline, anchored
   LEFT / CENTER / RIGHT of the bar with a small inset.
 - Visibility (`Core.lua`): shown at alpha 1 in combat (`PLAYER_REGEN_DISABLED/ENABLED`),
-  in stealth (`UPDATE_STEALTH` + `IsStealthed()`), and in Edit Mode. Otherwise alpha =
-  `outOfCombatAlpha` (0 hides the frame). Fade out over ~1s with an OnUpdate when leaving
-  combat. Edit Mode enter/exit call the same `ns.UpdateVisibility()`.
+  in stealth (`UPDATE_STEALTH` + `IsStealthed()`), and in Edit Mode. Out of combat the bar
+  stays at alpha 1 while energy is below the cap and fades over ~1s (OnUpdate) to
+  `outOfCombatAlpha` (0 hides the frame) once energy is full; spending energy out of combat
+  shows it again. Not configurable. The energy bar calls `ns.UpdateVisibility()` on every
+  energy update out of combat. "Full" is `UnitPower >= UnitPowerMax` inside `pcall`; when
+  that errors (secret energy, e.g. inside an instance) there is no fade: the frame stays shown
+  and its alpha comes from `UnitPowerPercent("player", Energy, false, alphaCurve)` with a
+  Step `C_CurveUtil.CreateCurve()` of points `(0, 1)` and `(1, outOfCombatAlpha)`.
+  Edit Mode enter/exit call the same `ns.UpdateVisibility()`; the dialog calls
+  `ns.ApplyVisibility()` (rebuilds the curve).
 - Defaults to add: `texture = "Blizzard"`, `font = "Friz Quadrata TT"`, `fontSize = 14`,
   `textAlign = "CENTER"`, `showText = true`, `normalColor`, `cappedColor`, `cappedThreshold = 0.9`,
   `outOfCombatAlpha = 0`, `showInStealth = true`.
 
 In-game test: bar follows energy out of combat, in combat and inside an instance (secret
-values) with no errors; color changes near cap; text aligns; fades after combat; stealth shows it;
+values) with no errors; color changes near cap; text aligns; after combat it stays until energy
+is full, then fades; Sprint out of combat shows it again; inside an instance out of combat it
+disappears at full energy (no fade) and comes back when energy drops; stealth shows it;
 Edit Mode shows it at full alpha.
 
 ## Stage 2. Combo points (done)

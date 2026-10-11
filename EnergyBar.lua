@@ -85,14 +85,15 @@ end
 
 local events = CreateFrame("Frame", nil, frame)
 events:SetScript("OnEvent", function(_, event, _, powerType)
-    if event == "UNIT_MAXPOWER" then
+    if event == "UNIT_MAXPOWER" or event == "PLAYER_ENTERING_WORLD" then
         UpdateMax()
-        ns.UpdateEnergyBar()
-    elseif event == "PLAYER_ENTERING_WORLD" then
-        UpdateMax()
-        ns.UpdateEnergyBar()
-    elseif powerType == "ENERGY" then
-        ns.UpdateEnergyBar()
+    elseif powerType ~= "ENERGY" then
+        return
+    end
+    ns.UpdateEnergyBar()
+    -- out of combat the visibility follows the energy (fade once full)
+    if not UnitAffectingCombat("player") then
+        ns.UpdateVisibility()
     end
 end)
 

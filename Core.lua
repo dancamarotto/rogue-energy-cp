@@ -57,57 +57,100 @@ local function IsRogue()
     return class == "ROGUE"
 end
 
--- Visibility: full alpha in combat, in stealth and in Edit Mode; otherwise
--- outOfCombatAlpha, reached with a short fade when leaving combat.
+-- Visibility: full alpha in combat, in stealth and in Edit Mode. Out of
+-- combat the frame stays visible while energy is below the cap and fades to
+-- outOfCombatAlpha once energy is full (not configurable). Out of combat the
+-- energy can still be secret (instances): then the fade is skipped and the
+-- game picks the alpha itself through a step curve evaluated by
+-- UnitPowerPercent, exactly like the bar color.
+local POWER = Enum.PowerType.Energy
 local FADE_DURATION = 1
-local fadeFrom, fadeTo, fadeElapsed
+local state -- "shown" | "fading" | "faded" | "secret"
+local fadeTo, fadeElapsed
+
+local alphaCurve = C_CurveUtil.CreateCurve()
+alphaCurve:SetType(Enum.LuaCurveType.Step)
+
+local function RebuildAlphaCurve()
+    alphaCurve:ClearPoints()
+    alphaCurve:AddPoint(0, 1)
+    alphaCurve:AddPoint(1, ns.db.outOfCombatAlpha)
+end
+
+-- Errors when the values are secret; always called through pcall.
+local function IsEnergyFull()
+    return UnitPower("player", POWER) >= UnitPowerMax("player", POWER)
+end
 
 local function StopFade()
     frame:SetScript("OnUpdate", nil)
+end
+
+local function SetShown()
+    StopFade()
+    state = "shown"
+    frame:SetAlpha(1)
+    frame:Show()
+end
+
+local function SetFaded(alpha)
+    StopFade()
+    state = "faded"
+    frame:SetAlpha(alpha)
+    frame:SetShown(alpha > 0)
 end
 
 local function OnFadeUpdate(self, elapsed)
     fadeElapsed = fadeElapsed + elapsed
     local progress = fadeElapsed / FADE_DURATION
     if progress >= 1 then
-        StopFade()
-        self:SetAlpha(fadeTo)
-        if fadeTo == 0 then self:Hide() end
+        SetFaded(fadeTo)
     else
-        self:SetAlpha(fadeFrom + (fadeTo - fadeFrom) * progress)
+        self:SetAlpha(1 + (fadeTo - 1) * progress)
     end
 end
 
 local function StartFade(target)
-    fadeFrom, fadeTo, fadeElapsed = frame:GetAlpha(), target, 0
+    state, fadeTo, fadeElapsed = "fading", target, 0
     frame:SetScript("OnUpdate", OnFadeUpdate)
 end
 
+-- Called on every visibility event and on every energy update out of combat.
 function ns.UpdateVisibility()
     local db = ns.db
     if not db then return end
 
-    local shown = ns.IsInEditMode()
+    if ns.IsInEditMode()
         or UnitAffectingCombat("player")
         or (db.showInStealth and IsStealthed())
-    if shown then
-        StopFade()
-        frame:SetAlpha(1)
-        frame:Show()
+    then
+        SetShown()
         return
     end
 
-    local target = db.outOfCombatAlpha
-    if frame:IsShown() and frame:GetAlpha() > target then
-        StartFade(target)
-    elseif target > 0 then
+    local ok, full = pcall(IsEnergyFull)
+    if not ok then
+        -- secret energy: alpha 1 below the cap, outOfCombatAlpha at the cap
         StopFade()
-        frame:SetAlpha(target)
+        state = "secret"
         frame:Show()
-    else
-        StopFade()
-        frame:Hide()
+        if not pcall(frame.SetAlpha, frame, UnitPowerPercent("player", POWER, false, alphaCurve)) then
+            frame:SetAlpha(1)
+        end
+    elseif not full then
+        SetShown()
+    elseif state == "shown" then
+        StartFade(db.outOfCombatAlpha)
+    elseif state ~= "fading" then
+        SetFaded(db.outOfCombatAlpha) -- already faded, coming from secret, or login
     end
+end
+
+-- Re-reads the visibility settings from ns.db (login and Edit Mode dialog).
+function ns.ApplyVisibility()
+    RebuildAlphaCurve()
+    state = nil
+    ns.UpdateVisibility()
 end
 
 frame:RegisterEvent("ADDON_LOADED")
@@ -128,7 +171,7 @@ frame:SetScript("OnEvent", function(self, event, arg1)
         self:RegisterEvent("PLAYER_REGEN_ENABLED")
         self:RegisterEvent("UPDATE_STEALTH")
         self:RegisterEvent("PLAYER_ENTERING_WORLD")
-        ns.UpdateVisibility()
+        ns.ApplyVisibility()
     else
         ns.UpdateVisibility()
     end
